@@ -1,5 +1,5 @@
 <script setup vapor>
-import { Sampler, loaded, Midi, PolySynth, getTransport, Reverb } from 'tone'
+import { Sampler, loaded, Midi, PolySynth, getTransport, Reverb, PingPongDelay } from 'tone'
 import { reactive, onMounted, shallowReactive, computed, watch } from 'vue';
 import { useStorage } from '@vueuse/core'
 import { useClamp } from '@vueuse/math';
@@ -9,7 +9,7 @@ import { Chord } from "tonal";
 import noteKeys from './noteKeys.json'
 import Presets from './presets.json'
 
-let sampler, reverb;
+let sampler, reverb, delay;
 
 const inputs = shallowReactive({})
 const outputs = shallowReactive({})
@@ -25,7 +25,6 @@ const midi = reactive({
 })
 
 const midiNote = reactive({
-  identifier: 'A4',
   number: 57,
   velocity: 0,
   channel: 1,
@@ -68,7 +67,6 @@ function initMidi() {
       let { type, note: { number }, velocity, message: { channel }, timestamp, port: { id } } = noteObj
       number = number + keyOffset.value * 12
       Object.assign(midiNote, {
-        identifier: Midi(number).toNote(),
         number,
         velocity: type == 'noteoff' ? 0 : velocity,
         channel,
@@ -86,17 +84,18 @@ function initMidi() {
   })
 }
 
-
 watch(midiNote, n => {
   if (n.velocity > 0) {
-    sampler.triggerAttack(n.identifier, "+0.000000001", n.velocity);
+    sampler.triggerAttack(Midi(n.number).toNote(), "+0.000000001", n.velocity);
   } else {
-    sampler.triggerRelease(n.identifier, "+0.000000001")
+    sampler.triggerRelease(Midi(n.number).toNote(), "+0.000000001")
   }
 })
 
 watch(currentPreset, p => {
-  sampler = new Sampler(Presets[p]).connect(reverb);
+  sampler.disconnect()
+  sampler.dispose()
+  sampler = new Sampler(Presets[p]).connect(delay);
 })
 
 
@@ -117,7 +116,15 @@ onMounted(() => {
     .finally(midi.initiated = true)
 
   reverb = new Reverb({ wet: 0.45, decay: 4.5 }).toDestination()
-  sampler = new Sampler(Presets[currentPreset.value]).connect(reverb);
+  delay = new PingPongDelay({
+    delayTime: '8t',
+    feedback: 0.1,
+    maxDelay: 10,
+    wet: 0.3
+  }).connect(reverb)
+
+
+  sampler = new Sampler(Presets[currentPreset.value]).connect(delay);
 
   const transport = getTransport()
   transport.start()
@@ -130,7 +137,6 @@ onMounted(() => {
     if (e.code == 'Slash') e.preventDefault()
     const number = noteKeys[e.code] + keyOffset.value * 12
     Object.assign(midiNote, {
-      identifier: Midi(number).toNote(),
       number,
       velocity: 1,
       channel: 0,
@@ -159,7 +165,7 @@ onMounted(() => {
 
 <template lang='pug'>
 .flex.flex-col.items-center.w-full.h-100svh.justify-center
-  .p-2.text-4xl.absolute.top-4(@click="") Sampler Experiment
+  .p-2.text-4xl.absolute.top-4 Sampler Experiment
   .p-4.flex.flex-wrap.gap-2.absolute.top-16
     button.p-4.rounded.shadow-lg.hover-brightness-110.bg-light-200(v-for="(preset,p) in Presets" :key="preset" @click="currentPreset = p" :class="{'invert':currentPreset==p}") {{p}}
   .p-4.flex.flex-wrap.gap-8.justify-center.items-center
