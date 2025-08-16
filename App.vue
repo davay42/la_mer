@@ -1,18 +1,21 @@
 <script setup vapor>
 import { Sampler, loaded, Midi, PolySynth, getTransport, Reverb } from 'tone'
-
-import noteKeys from './composables/noteKeys.json'
-import { useClamp } from '@vueuse/math';
-import { useStorage } from '@vueuse/core'
-import { WebMidi } from "webmidi";
 import { reactive, onMounted, shallowReactive, computed, watch } from 'vue';
-
+import { useStorage } from '@vueuse/core'
+import { useClamp } from '@vueuse/math';
+import { WebMidi } from "webmidi";
 import { Chord } from "tonal";
+
+import noteKeys from './noteKeys.json'
+import Presets from './presets.json'
 
 let sampler, reverb;
 
 const inputs = shallowReactive({})
 const outputs = shallowReactive({})
+
+const activeNotes = reactive({})
+const midiLog = shallowReactive([])
 
 const midi = reactive({
   initiated: false,
@@ -30,32 +33,12 @@ const midiNote = reactive({
   port: null
 })
 
-const activeNotes = reactive({})
-
-const midiLog = shallowReactive([])
+const keyOffset = useClamp(2, 0, 4)
+const currentPreset = useStorage('sampler-preset', 'string')
 
 const guessChords = computed(() => {
   const list = Object.entries(activeNotes).filter(([_, v]) => v).map(([n]) => Midi(Number(n)).toNote());
   return Chord.detect(list)
-})
-
-
-
-onMounted(() => {
-  if (midi.enabled || midi.enabled === null) return
-  WebMidi.enable().then(() => {
-    initMidi()
-    WebMidi.addListener("connected", initMidi)
-    WebMidi.addListener("disconnected", e => {
-      if (e.port.type == 'input') {
-        delete inputs[e.port.id]
-      } else if (e.port.type == 'output') {
-        delete outputs[e.port.id]
-      }
-    })
-    midi.enabled = true
-  }).catch(e => midi.enabled = null)
-    .finally(midi.initiated = true)
 })
 
 
@@ -94,12 +77,6 @@ function initMidi() {
       })
       activeNotes[number] = type == 'noteoff' ? 0 : velocity
     }
-
-    // controlchange: handleControlChange(input),
-    // channelaftertouch: handleMonoAftertouch(input),
-    // keyaftertouch: handlePolyAftertouch(input),
-    // pitchbend: ev => {     },
-
   })
   WebMidi.outputs.forEach(output => {
     outputs[output.id] = {
@@ -109,41 +86,6 @@ function initMidi() {
   })
 }
 
-
-const keyOffset = useClamp(2, 0, 4)
-
-const currentPreset = useStorage('sampler-preset', 'string')
-
-const Presets = {
-  pluck: {
-    urls: {
-      F3: "pluck.wav",
-    },
-    release: 1,
-    baseUrl: "/samples/"
-  },
-  pad: {
-    urls: {
-      F3: "pad.wav",
-    },
-    release: 1,
-    baseUrl: "/samples/"
-  },
-  string: {
-    urls: {
-      D3: "string.wav",
-    },
-    release: 1,
-    baseUrl: "/samples/"
-  },
-  calimba: {
-    urls: {
-      "F#4": "calimba.wav",
-    },
-    release: 1,
-    baseUrl: "/samples/"
-  }
-}
 
 watch(midiNote, n => {
   if (n.velocity > 0) {
@@ -159,12 +101,27 @@ watch(currentPreset, p => {
 
 
 onMounted(() => {
+
+  WebMidi.enable().then(() => {
+    initMidi()
+    WebMidi.addListener("connected", initMidi)
+    WebMidi.addListener("disconnected", e => {
+      if (e.port.type == 'input') {
+        delete inputs[e.port.id]
+      } else if (e.port.type == 'output') {
+        delete outputs[e.port.id]
+      }
+    })
+    midi.enabled = true
+  }).catch(e => midi.enabled = null)
+    .finally(midi.initiated = true)
+
   reverb = new Reverb({ wet: 0.45, decay: 4.5 }).toDestination()
   sampler = new Sampler(Presets[currentPreset.value]).connect(reverb);
 
   const transport = getTransport()
-
   transport.start()
+
   document.addEventListener('keydown', e => {
     if (e.code == 'Digit1') keyOffset.value--
     if (e.code == 'Equal') keyOffset.value++

@@ -1,0 +1,30 @@
+{
+	"pluck": {
+		"urls": {
+			"F3": "pluck.wav"
+		},
+		"release": 1,
+		"baseUrl": "/samples/"
+	},
+	"pad": {
+		"urls": {
+			"F3": "pad.wav"
+		},
+		"release": 1,
+		"baseUrl": "/samples/"
+	},
+	"string": {
+		"urls": {
+			"D3": "string.wav"
+		},
+		"release": 1,
+		"baseUrl": "/samples/"
+	},
+	"calimba": {
+		"urls": {
+			"F#4": "calimba.wav"
+		},
+		"release": 1,
+		"baseUrl": "/samples/"
+	}
+}
