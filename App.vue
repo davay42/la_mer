@@ -168,6 +168,7 @@ onMounted(() => {
   .p-2.text-4xl.absolute.top-4 Sampler Experiment
   .p-4.flex.flex-wrap.gap-2.absolute.top-16
     button.p-4.rounded.shadow-lg.hover-brightness-110.bg-light-200(v-for="(preset,p) in Presets" :key="preset" @click="currentPreset = p" :class="{'invert':currentPreset==p}") {{p}}
+  button.p-4.bg-red.absolute.z-100.hover-brightness-120.transition(@pointerdown="Object.assign(midiNote, {number:69+keyOffset * 12,      velocity: 1, channel: 0, timestamp: Date.now(), port: 'UI'});activeNotes[69+keyOffset * 12] = 1" @pointerup="midiNote.velocity=0;activeNotes[69+keyOffset * 12] = 0" @pointercancel="midiNote.velocity=0;activeNotes[69+keyOffset * 12] = 0") Play note A
   .p-4.flex.flex-wrap.gap-8.justify-center.items-center
     .p-12.blur-xl.rounded-full(
       v-for="note in Object.entries(activeNotes).filter(e=>e[1]>0)" 
