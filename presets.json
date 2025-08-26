@@ -26,5 +26,26 @@
 		},
 		"release": 1,
 		"baseUrl": "/samples/"
+	},
+	"sea": {
+		"urls": {
+			"D3": "sea.wav"
+		},
+		"release": 1,
+		"baseUrl": "/samples/"
+	},
+	"water": {
+		"urls": {
+			"C2": "water.wav"
+		},
+		"release": 1,
+		"baseUrl": "/samples/"
+	},
+	"braille": {
+		"urls": {
+			"C4": "braille.wav"
+		},
+		"release": 1,
+		"baseUrl": "/samples/"
 	}
 }
