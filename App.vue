@@ -4,7 +4,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { useMIDI } from './src/useMidi'
 import Presets from './presets.json'
-import Waveform from './src/components/Waveform.vue'
+import Waveform from './src/Waveform.vue'
 
 let sampler, reverb, delay
 

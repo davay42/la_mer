@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
-import { useMIDI } from '../useMidi'
+import { useMIDI } from './useMidi'
 
 const props = defineProps({ buffer: Object })
 const canvas = ref(null)
