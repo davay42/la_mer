@@ -1,5 +1,6 @@
 {
-	"name": "sampler",
+	"name": "la_mer",
+	"private": "true",
 	"version": "0.0.1",
 	"homepage": "https://sampler.chromatone.center",
 	"repository": {

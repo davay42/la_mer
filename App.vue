@@ -124,7 +124,7 @@ import globes from './globes.yaml'
 </script>
 
 <template lang='pug'>
-.flex.flex-col.items-center.w-full.h-100svh.justify-center(:style="{backgroundColor: '#EEDDCD'}").text-white
+.flex.flex-col.items-center.w-full.h-100svh.justify-center(:style="{backgroundColor: '#006140'}").text-white
   .p-2.top-4.font-serif.text-8xl.absolute.text-white La Mer
 
   .p-4.flex.flex-wrap.gap-8.justify-center.items-center.w-full
@@ -135,8 +135,8 @@ import globes from './globes.yaml'
       ) {{Midi(note[0]).toNote()}} 
 
     .flex.items-center.gap-6.flex-wrap.w-full.justify-center
-      .p-0.flex.text-center.relative.justify-center.items-center(v-for="globe in globes" :key="globe.name")
-        .text-sm.absolute {{globe.name}}
+      .rounded-full.hover-shadow-2xl.shadow-sm.cursor-pointer.hover-scale-110.transition-800.p-0.flex.text-center.relative.justify-center.items-center(v-for="globe in globes" :key="globe.name")
+        .text-sm.absolute.z-10 {{globe.name}}
         GradientCircle(:size="200"
           v-bind="globe")
 
