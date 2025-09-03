@@ -1,12 +1,12 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { createNoise3D } from 'simplex-noise'
 import { TransitionPresets, useTransition } from '@vueuse/core'
 
 const props = defineProps({
+  name: { type: String, default: '' },
   active: { type: Boolean, default: false },
   size: { type: Number, default: 200 },
-  seed: { type: Number, default: Math.floor(Math.random() * 10000) },
   // blobs: [{ color: string, r: number|0..1, base: [x,y]|[0..1,0..1], colorSens?: number, sizeSens?: number, posSens?: number, speed?: number }]
   blobs: {
     type: Array, default: () => ([
@@ -19,7 +19,7 @@ const props = defineProps({
 
 const activity = useTransition
   (computed(() => props.active ? 1 : 0), {
-    duration: 700,
+    duration: 500,
     transition: TransitionPresets.easeInOutCubic,
   })
 
@@ -48,6 +48,12 @@ let lastTime = 0
 function animate(time) {
   const dt = lastTime ? Math.min(1 / 15, (time - lastTime) / 1000) : 0 // cap dt to avoid large jumps
   lastTime = time
+  // slow circular motion for turbulence (shared angle, different radii)
+  const a = time * 0.002
+  turb.value.mx = Math.cos(a) * 25 * activity.value
+  turb.value.my = Math.sin(a) * 25 * activity.value
+  turb.value.gx = Math.cos(a + Math.PI / 2) * 12 * activity.value
+  turb.value.gy = Math.sin(a + Math.PI / 2) * 12 * activity.value
   props.blobs.forEach((b, i) => {
     const S = props.size ?? 200
 
@@ -94,8 +100,55 @@ function animate(time) {
   rafId = requestAnimationFrame(animate)
 }
 
-onMounted(() => { rafId = requestAnimationFrame(animate) })
+
+
+onMounted(() => {
+  const n1 = noise3D(1, 4, Date.now())
+  console.log(n1)
+  rafId = requestAnimationFrame(animate)
+})
 onUnmounted(() => cancelAnimationFrame(rafId))
+
+const grainSeed = ref(Math.floor(Math.random() * 10000))
+const seed = ref(Math.floor(Math.random() * 10000))
+const turb = ref({ mx: 0, my: 0, gx: 0, gy: 0 })
+
+// keep internal arrays in sync with variable-length blobs
+watch(() => props.blobs, (blobs) => {
+  const S = props.size ?? 200
+  // trim/extend positions to exactly match blobs length
+  const newPositions = blobs.map((b, i) => {
+    const prev = positions.value[i]
+    if (prev) return prev
+    return {
+      cx: toPx(b.base[0], S),
+      cy: toPx(b.base[1], S),
+      r: Math.max(1, toPx(b.r, S)),
+      op: 1,
+    }
+  })
+  positions.value = newPositions
+
+  const newBases = blobs.map((b, i) => {
+    const prev = bases.value[i]
+    if (prev) return prev
+    return {
+      bx: toPx(b.base[0], S),
+      by: toPx(b.base[1], S),
+      rBase: toPx(b.r, S),
+    }
+  })
+  bases.value = newBases
+}, { deep: true })
+
+watch(activity, a => {
+  if (a == 0) { seed.value = Math.floor(Math.random() * 10000) }
+})
+
+watch(() => props.name, () => {
+  grainSeed.value = Math.floor(Math.random() * 10000)
+  seed.value = Math.floor(Math.random() * 10000)
+})
 </script>
 
 <template lang="pug">
@@ -103,17 +156,28 @@ svg.scale-120(:viewBox="`0 0 ${size} ${size}`" :width="size" :height="size")
   defs
     filter#soft(color-interpolation-filters="sRGB")
       feGaussianBlur(stdDeviation="62")
+
+    
+    filter#maskDistort(color-interpolation-filters="sRGB" 
+      filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse"
+      :x="-size * 0.25" :y="-size * 0.25" :width="size * 1.5" :height="size * 1.5")
+      feTurbulence(type="fractalNoise" :baseFrequency="0.005*activity"  numOctaves="1" :seed result="noise")
+      feOffset(in="noise" :dx="turb.mx" :dy="turb.my" result="noiseShifted")
+      feDisplacementMap(in="SourceGraphic" in2="noiseShifted" :scale="activity * 60" xChannelSelector="R" yChannelSelector="G")
     mask#round
       rect(:width="size" :height="size" fill="black")
-      circle(:cx="size/2" :cy="size/2" :r="size/2-20+activity*20" fill="white")
+      // Apply the distortion filter to the white mask circle
+      circle(:cx="size/2" :cy="size/2" :r="size/2-40+activity*20" fill="white" filter="url(#maskDistort)")
+    
     filter#grain(
       color-interpolation-filters="sRGB"
       filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse"
       :x="-size * 0.25" :y="-size * 0.25" :width="size * 1.5" :height="size * 1.5"
-    )
+      )
       feGaussianBlur(in="SourceGraphic" stdDeviation="10" result="blur")
-      feTurbulence(type="fractalNoise" baseFrequency="0.015" numOctaves="4" :seed stitchTiles="stitch" result="noise")
-      feDisplacementMap(in="blur" in2="noiseShifted" scale="25" xChannelSelector="R" yChannelSelector="G" result="dist")
+      feTurbulence(type="fractalNoise" baseFrequency="0.015" numOctaves="4" :seed="grainSeed" stitchTiles="stitch" result="noise")
+      feOffset(in="noise" :dx="turb.gx" :dy="turb.gy" result="noiseShifted")
+      feDisplacementMap(in="blur" in2="noiseShifted" scale="45" xChannelSelector="R" yChannelSelector="G" result="dist")
       feComposite(in="dist" in2="dist" operator="over")
   g(filter="url(#grain)"  mask="url(#round)")
     g(filter="url(#soft)")
