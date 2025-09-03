@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import UnoCSS from 'unocss/vite'
 import { viteSingleFile } from "vite-plugin-singlefile"
+import ViteYaml from '@modyfi/vite-plugin-yaml';
 
 export default defineConfig({
   base: './',
@@ -17,7 +18,8 @@ export default defineConfig({
     vue(),
     UnoCSS(),
     viteSingleFile(),
-    viteBuildScript()
+    viteBuildScript(),
+    ViteYaml()
   ],
 })
 

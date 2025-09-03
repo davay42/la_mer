@@ -1,0 +1,38 @@
+- name: Crème de la Mer
+  blobs:
+    - color: "white"
+      r: 480
+      base:
+        - 100
+        - 100
+      posSens: 0
+      sizeSens: 0
+      colorSens: 0
+      speed: 0
+    - color: "#f18edc"
+      r: 180
+      base:
+        - 10
+        - 30
+      posSens: 4.8
+      sizeSens: 1.6
+      colorSens: 0.6
+      speed: 0.00001
+    - color: "#ff8874"
+      r: 140
+      base:
+        - 160
+        - 70
+      posSens: 2.2
+      sizeSens: 0.4
+      colorSens: 1
+      speed: 0.00001
+    - color: "#f1c180"
+      r: 140
+      base:
+        - 42
+        - 200
+      posSens: 1
+      sizeSens: 0.1
+      colorSens: 1
+      speed: 0.000001

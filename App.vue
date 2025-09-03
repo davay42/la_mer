@@ -1,10 +1,10 @@
 <script setup>
 import { Sampler, Midi, getTransport, Reverb, PingPongDelay } from 'tone'
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { useMIDI } from './src/useMidi'
 import Presets from './presets.json'
-import Waveform from './src/Waveform.vue'
+import GradientCircle from './src/GradientCircle.vue'
 
 let sampler, reverb, delay
 
@@ -13,49 +13,7 @@ const { activeNotes, midiNote, guessChords } = useMIDI()
 
 const loading = ref(false)
 const progress = ref(0)
-const waveRef = ref(null)
 const audioBuffer = ref(null)
-
-function drawWaveform(canvas, audioBuffer, opts = {}) {
-  if (!canvas || !audioBuffer) return
-  const dpr = window.devicePixelRatio || 1
-  const width = Math.max(256, canvas.clientWidth)
-  const height = opts.height || Math.max(64, canvas.clientHeight || 96)
-  canvas.width = Math.floor(width * dpr)
-  canvas.height = Math.floor(height * dpr)
-  canvas.style.width = width + 'px'
-  canvas.style.height = height + 'px'
-  const ctx = canvas.getContext('2d')
-  ctx.scale(dpr, dpr)
-  ctx.clearRect(0, 0, width, height)
-
-  const channel = audioBuffer.numberOfChannels ? audioBuffer.getChannelData(0) : null
-  if (!channel) return
-
-  const samplesPerPixel = Math.max(1, Math.floor(channel.length / width))
-  const midY = height / 2
-
-  // background
-  ctx.fillStyle = opts.bg || 'transparent'
-  ctx.fillRect(0, 0, width, height)
-
-  // waveform
-  ctx.fillStyle = opts.fill || '#06b6d4'
-  for (let x = 0; x < width; x++) {
-    const start = x * samplesPerPixel
-    let min = 1, max = -1
-    for (let i = 0; i < samplesPerPixel; i++) {
-      const v = channel[start + i]
-      if (v !== undefined) {
-        if (v < min) min = v
-        if (v > max) max = v
-      }
-    }
-    const y1 = midY + (min * midY)
-    const y2 = midY + (max * midY)
-    ctx.fillRect(x, y1, 1, Math.max(1, y2 - y1))
-  }
-}
 
 watch(midiNote, n => {
   if (!sampler) return
@@ -67,39 +25,19 @@ watch(currentPreset, p => {
   if (!delay) return
   try { sampler?.disconnect(); sampler?.dispose() } catch (e) { }
   sampler = new Sampler(Presets[p]).connect(delay)
-  // draw waveform for the preset sample (first url in preset)
-  loadPresetWaveform(p)
+
 })
 
 onMounted(() => {
-  reverb = new Reverb({ wet: 0.45, decay: 4.5 }).toDestination()
-  delay = new PingPongDelay({ delayTime: '8t', feedback: 0.1, maxDelay: 10, wet: 0.3 }).connect(reverb)
+  reverb = new Reverb({ wet: 0.65, decay: 5.5 }).toDestination()
+  delay = new PingPongDelay({ delayTime: '8t', feedback: 0.2, maxDelay: 20, wet: 0.4 }).connect(reverb)
   sampler = new Sampler(Presets[currentPreset.value]).connect(delay)
-  // render waveform for current preset
-  loadPresetWaveform(currentPreset.value)
+
   getTransport().start()
 })
 
-async function loadPresetWaveform(presetKey) {
-  try {
-    const preset = Presets[presetKey]
-    if (!preset || !preset.urls) return
-    const files = Object.values(preset.urls)
-    if (!files.length) return
-    const filename = files[0]
-    const base = preset.baseUrl || ''
-    const url = base + filename
-    const resp = await fetch(url)
-    if (!resp.ok) throw new Error(`fetch ${url} failed: ${resp.status}`)
-    const arr = await resp.arrayBuffer()
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)()
-    audioBuffer.value = await audioCtx.decodeAudioData(arr)
-    requestAnimationFrame(() => drawWaveform(waveRef.value, audioBuffer.value, { fill: '#06b6d4' }))
-  } catch (err) {
-    // don't block the app for missing preset assets
-    console.warn('unable to load preset waveform', presetKey, err)
-  }
-}
+onUnmounted(() => {
+})
 
 // load a single sample file with a visible progress bar and app lock
 async function onFile(e) {
@@ -123,8 +61,7 @@ async function onFile(e) {
     // replace sampler with one that uses the uploaded buffer (mapped to C4)
     try { sampler?.disconnect(); sampler?.dispose() } catch (e) { }
     sampler = new Sampler({ 'C4': audioBuffer.value }, () => { progress.value = 1; loading.value = false }).connect(delay)
-    // draw waveform
-    requestAnimationFrame(() => drawWaveform(waveRef.value, audioBuffer.value, { fill: '#06b6d4' }))
+
   } catch (err) {
     console.error('sample load error', err)
     loading.value = false
@@ -162,8 +99,7 @@ async function onLoadUrl() {
 
     try { sampler?.disconnect(); sampler?.dispose() } catch (e) { }
     sampler = new Sampler({ 'C4': audioBuffer.value }, () => { progress.value = 1; loading.value = false }).connect(delay)
-    // draw waveform
-    requestAnimationFrame(() => drawWaveform(waveRef.value, audioBuffer.value, { fill: '#06b6d4' }))
+
   } catch (err) {
     console.error('URL load error', err)
     loading.value = false
@@ -182,45 +118,39 @@ function concatUint8(chunks) {
   return out
 }
 
+const globePresets = [
+  {
+    name: 'Crème de la Mer',
+    blobs: [
+      { color: '#f18edc', r: 180, base: [10, 30], posSens: 2.8, sizeSens: 0.6, colorSens: 0.6, speed: 0.0001 },
+      { color: '#ff8874', r: 140, base: [160, 70], posSens: 2.2, sizeSens: 0.4, colorSens: 1, speed: 0.00001 },
+      { color: '#f1c180', r: 120, base: [0, 220], posSens: 1.0, sizeSens: 10.1, colorSens: 0, speed: 0.0001 },
+    ],
+  },
+]
+
+import globes from './globes.yaml'
+
 </script>
 
 <template lang='pug'>
-.flex.flex-col.items-center.w-full.h-100svh.justify-center
-  .p-2.text-4xl.absolute.top-4 Sampler Experiment
+.flex.flex-col.items-center.w-full.h-100svh.justify-center(:style="{backgroundColor: '#006140'}")
+  .p-2.top-4.font-serif.text-8xl.absolute.text-white La Mer
 
-  // presets
-  .p-4.flex.flex-wrap.gap-2.absolute.top-16
-    button.p-4.rounded.shadow-lg.hover-brightness-110.bg-light-200(v-for="(preset,p) in Presets" :key="preset" @click="currentPreset = p" :class="{'invert':currentPreset==p}") {{p}}
-
-  // file input (hidden) + label as button
-  .absolute.bottom-4.right-4.flex.items-center.gap-2
-    label.p-4.bg-blue-500.text-white.rounded.cursor-pointer
-      | Load sample
-      input(type='file' accept='.wav,.mp3,.ogg' @change='onFile' hidden)
-    button.p-4.bg-emerald-500.text-white.rounded(@click='onLoadUrl') Load URL
-
-  button.p-4.bg-red.absolute.z-100.hover-brightness-120.transition(@pointerdown="Object.assign(midiNote, {number:69, velocity: 1, channel: 0, timestamp: Date.now(), port: 'UI'});activeNotes[69] = 1" @pointerup="midiNote.velocity=0;activeNotes[69] = 0" @pointercancel="midiNote.velocity=0;activeNotes[69] = 0") Play note A
-
-  .p-4.flex.flex-wrap.gap-8.justify-center.items-center
+  .p-4.flex.flex-wrap.gap-8.justify-center.items-center.w-full
     .p-12.blur-xl.rounded-full(
       v-for="note in Object.entries(activeNotes).filter(e=>e[1]>0)" 
       :key="note"
       :style="{backgroundColor:`hsl(${30*((note[0]-9)%12)}deg,100%,50%)` }"
       ) {{Midi(note[0]).toNote()}} 
 
-  // waveform component
-  .w-full.p-4.mt-4.flex.justify-center.absolute
-    Waveform(:buffer="audioBuffer")
+    .flex.items-center.gap-6.flex-wrap.w-full.justify-center
+      .p-0.flex.text-center.relative.justify-center.items-center(v-for="globe in globes" :key="globe.name")
+        .text-sm.absolute {{globe.name}}
+        GradientCircle(:size="200"
+          v-bind="globe")
+
 
   .p-4.flex.flex-wrap.gap-2.absolute.bottom-4
     .p-4.bg-light-200(v-for="(chord,c) in guessChords" :key="c") {{chord}}
-
-  // loading overlay + progress
-  .absolute.inset-0.z-50.flex.items-center.justify-center.top-0.left-0.right-0.h-10(v-if="loading")
-    .absolute.inset-0.bg-dark-50
-    .w-11.max-w-lg.bg-white.rounded-lg.p-6.shadow-lg.pointer-events-auto
-      .text-lg.font-medium.mb-3 Loading sample...
-      .w-full.h-3.bg-slate-200.rounded.overflow-hidden
-        .h-full.bg-gradient-to-r.from-blue-500.to-teal-400(:style="{ width: (progress*100)+'%' }")
-      .text-sm.mt-2 {{ Math.round(progress*100) }}%
 </template>
