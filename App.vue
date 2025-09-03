@@ -118,23 +118,13 @@ function concatUint8(chunks) {
   return out
 }
 
-const globePresets = [
-  {
-    name: 'Crème de la Mer',
-    blobs: [
-      { color: '#f18edc', r: 180, base: [10, 30], posSens: 2.8, sizeSens: 0.6, colorSens: 0.6, speed: 0.0001 },
-      { color: '#ff8874', r: 140, base: [160, 70], posSens: 2.2, sizeSens: 0.4, colorSens: 1, speed: 0.00001 },
-      { color: '#f1c180', r: 120, base: [0, 220], posSens: 1.0, sizeSens: 10.1, colorSens: 0, speed: 0.0001 },
-    ],
-  },
-]
 
 import globes from './globes.yaml'
 
 </script>
 
 <template lang='pug'>
-.flex.flex-col.items-center.w-full.h-100svh.justify-center(:style="{backgroundColor: '#006140'}")
+.flex.flex-col.items-center.w-full.h-100svh.justify-center(:style="{backgroundColor: '#EEDDCD'}").text-white
   .p-2.top-4.font-serif.text-8xl.absolute.text-white La Mer
 
   .p-4.flex.flex-wrap.gap-8.justify-center.items-center.w-full
