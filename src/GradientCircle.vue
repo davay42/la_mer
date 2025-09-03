@@ -1,8 +1,10 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { createNoise3D } from 'simplex-noise'
+import { TransitionPresets, useTransition } from '@vueuse/core'
 
 const props = defineProps({
+  active: { type: Boolean, default: false },
   size: { type: Number, default: 200 },
   seed: { type: Number, default: Math.floor(Math.random() * 10000) },
   // blobs: [{ color: string, r: number|0..1, base: [x,y]|[0..1,0..1], colorSens?: number, sizeSens?: number, posSens?: number, speed?: number }]
@@ -15,8 +17,14 @@ const props = defineProps({
   },
 })
 
+const activity = useTransition
+  (computed(() => props.active ? 1 : 0), {
+    duration: 700,
+    transition: TransitionPresets.easeInOutCubic,
+  })
+
 // internal fallbacks when a blob doesn't specify its own
-const DEFAULTS = { posSens: 1.0, sizeSens: 0.15, colorSens: 0.5, speed: 0.00015 }
+const DEFAULTS = { posSens: 1.0, sizeSens: 0.15, colorSens: 0.5, speed: 0.00025 }
 
 const noise3D = createNoise3D()
 
@@ -27,35 +35,59 @@ const positions = ref(props.blobs.map(b => {
   const bx = toPx(b.base[0], S)
   const by = toPx(b.base[1], S)
   const rMin = toPx(b.r, S)
-  return { cx: bx, cy: by, r: rMin, op: 0.85 }
+  return { cx: bx, cy: by, r: rMin, op: 1 }
+}))
+// smoothed bases that gently ease to new props values (to avoid jumps)
+const bases = ref(props.blobs.map(b => {
+  const S = props.size ?? 200
+  return { bx: toPx(b.base[0], S), by: toPx(b.base[1], S), rBase: toPx(b.r, S) }
 }))
 let rafId = 0
+let lastTime = 0
 
 function animate(time) {
+  const dt = lastTime ? Math.min(1 / 15, (time - lastTime) / 1000) : 0 // cap dt to avoid large jumps
+  lastTime = time
   props.blobs.forEach((b, i) => {
     const S = props.size ?? 200
-    const bx = toPx(b.base[0], S)
-    const by = toPx(b.base[1], S)
+
+    // ensure array slots exist if blobs length changes dynamically
+    if (!positions.value[i]) positions.value[i] = { cx: S / 2, cy: S / 2, r: 1, op: 1 }
+    if (!bases.value[i]) bases.value[i] = { bx: S / 2, by: S / 2, rBase: 1 }
+
+    const targetBx = toPx(b.base[0], S)
+    const targetBy = toPx(b.base[1], S)
+    const targetR = toPx(b.r, S)
+
     const posSens = b.posSens ?? DEFAULTS.posSens
     const sizeSens = b.sizeSens ?? DEFAULTS.sizeSens
     const colorSens = b.colorSens ?? DEFAULTS.colorSens
     const speed = b.speed ?? DEFAULTS.speed
 
-    // scale motion amplitude with component size (~8% of size per unit posSens)
-    const ampPos = 0.08 * S * posSens
+    // ease bases toward targets using exponential smoothing (6 Hz natural response)
+    const lerpHz = 6
+    const k = dt ? (1 - Math.exp(-lerpHz * dt)) : 1
+    bases.value[i].bx += (targetBx - bases.value[i].bx) * k
+    bases.value[i].by += (targetBy - bases.value[i].by) * k
+    bases.value[i].rBase += (targetR - bases.value[i].rBase) * k
+
+    // scale motion amplitude with component size (~ per unit posSens)
+    const ampPos = S * posSens * 0.08
     const z = time * speed
+
     // normalize inputs so noise pattern is scale-agnostic
-    const nx = bx / S
-    const ny = by / S
+    const nx = bases.value[i].bx / S
+    const ny = bases.value[i].by / S
+
     const n1 = noise3D(nx, ny, z + i) // [-1,1]
     const n2 = noise3D(ny, nx, z + i + 50)
     const n3 = noise3D((nx + ny) * 0.5, (nx - ny) * 0.5, z + i * 0.37 + 3.33)
 
-    positions.value[i].cx = bx + n1 * ampPos
-    positions.value[i].cy = by + n2 * ampPos
+    positions.value[i].cx = bases.value[i].bx + n1 * ampPos
+    positions.value[i].cy = bases.value[i].by + n2 * ampPos
+
     const v = (n3 + 1) / 2 // [0,1]
-    const rMin = toPx(b.r, S)
-    positions.value[i].r = Math.max(1, rMin * (1 + v * sizeSens)) // r is minimum; grows by percentage
+    positions.value[i].r = Math.max(1, bases.value[i].rBase * (1 + v * sizeSens))
     const op = 0.75 + (v - 0.5) * 0.5 * colorSens
     positions.value[i].op = Math.min(1, Math.max(0, op))
   })
@@ -67,26 +99,26 @@ onUnmounted(() => cancelAnimationFrame(rafId))
 </script>
 
 <template lang="pug">
-svg.rounded-full(:viewBox="`0 0 ${size} ${size}`" :width="size" :height="size")
+svg.scale-120(:viewBox="`0 0 ${size} ${size}`" :width="size" :height="size")
   defs
     filter#soft(color-interpolation-filters="sRGB")
-      feGaussianBlur(stdDeviation="32")
+      feGaussianBlur(stdDeviation="62")
     mask#round
       rect(:width="size" :height="size" fill="black")
-      circle(:cx="size/2" :cy="size/2" :r="size*0.99" fill="white")
-    // Global post filter: fixed in SVG user space (no jitter), with animated turbulence and generous bounds
+      circle(:cx="size/2" :cy="size/2" :r="size/2-20+activity*20" fill="white")
     filter#grain(
       color-interpolation-filters="sRGB"
       filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse"
-      :x="-size * 0.25" :y="-size * 0.25" :width="size * 2" :height="size * 2"
+      :x="-size * 0.25" :y="-size * 0.25" :width="size * 1.5" :height="size * 1.5"
     )
       feGaussianBlur(in="SourceGraphic" stdDeviation="10" result="blur")
-      feTurbulence(type="fractalNoise" baseFrequency="0.015" numOctaves="5" :seed stitchTiles="stitch" result="noise")
-      feDisplacementMap(in="blur" in2="noiseShifted" scale="60" xChannelSelector="R" yChannelSelector="G" result="dist")
+      feTurbulence(type="fractalNoise" baseFrequency="0.015" numOctaves="4" :seed stitchTiles="stitch" result="noise")
+      feDisplacementMap(in="blur" in2="noiseShifted" scale="25" xChannelSelector="R" yChannelSelector="G" result="dist")
       feComposite(in="dist" in2="dist" operator="over")
-  g(filter="url(#grain)")
-    g(filter="url(#soft)" mask="url(#round)")
+  g(filter="url(#grain)"  mask="url(#round)")
+    g(filter="url(#soft)")
       circle(v-for="(b,i) in blobs" :key="i"
              :cx="positions[i].cx" :cy="positions[i].cy" :r="positions[i].r"
-             :fill="b.color" :fill-opacity="positions[i].op")
+             :fill="b.color" :fill-opacity="positions[i].op"
+             style="transition: fill 2000ms ease, fill-opacity 2000ms ease")
 </template>

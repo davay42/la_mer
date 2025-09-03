@@ -1,0 +1,38 @@
+{
+	"dela": {
+		"urls": {
+			"C3": "piano1.mp3",
+			"C4": "piano2.mp3",
+			"C5": "piano3.mp3"
+		},
+		"release": 1,
+		"baseUrl": "/testsounds-part2/"
+	},
+	"night": {
+		"urls": {
+			"C3": "sea1.mp3",
+			"C4": "sea2.mp3",
+			"C5": "sea3.mp3"
+		},
+		"release": 1,
+		"baseUrl": "/testsounds-part2/"
+	},
+	"soft": {
+		"urls": {
+			"C3": "piano1.mp3",
+			"C4": "piano2.mp3",
+			"C5": "piano3.mp3"
+		},
+		"release": 1,
+		"baseUrl": "/testsounds-part2/"
+	},
+	"fresh": {
+		"urls": {
+			"C3": "sea1.mp3",
+			"C4": "sea2.mp3",
+			"C5": "sea3.mp3"
+		},
+		"release": 1,
+		"baseUrl": "/testsounds-part2/"
+	}
+}

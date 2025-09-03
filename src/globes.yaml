@@ -1,95 +1,99 @@
 - name: Crème de la Mer
+  preset: dela
   blobs:
     - color: "#F18EDC"
-      r: 0.54
-      base: [0.2, 0.38]
-      posSens: 0.9
-      sizeSens: 2.25
+      r: 0.64
+      base: [0.2, 0.2]
+      posSens: 0.5
+      sizeSens: 1.25
       colorSens: 0.2
-      speed: 0.0005
+      speed: 0.00005
     - color: "#FF8874"
-      r: 0.68
+      r: 0.38
       base: [0.66, 0.1]
-      posSens: 1.1
-      sizeSens: .90
+      posSens: 0.5
+      sizeSens: .30
       colorSens: 0.7
-      speed: 0.0005
+      speed: 0.00015
     - color: "#F1C180"
       r: 0.32
       base: [0.50, 0.90]
-      posSens: 0.8
+      posSens: 0.05
       sizeSens: 0.30
       colorSens: 0.2
-      speed: 0.0005
+      speed: 0.00025
 
 - name: Rejuvenating Night Cream
+  preset: night
   blobs:
     - color: "#608EFF"
       r: 0.52
       base: [0.30, 0.30]
-      posSens: 3.0
+      posSens: 0.5
       sizeSens: 1.22
       colorSens: 0.1
-      speed: 0.0005
+      speed: 0.00025
     - color: "#853EFF"
       r: 0.37
       base: [0.70, 0.35]
-      posSens: 1.2
+      posSens: 0.05
       sizeSens: 0.18
       colorSens: 0.7
-      speed: 0.0005
+      speed: 0.00025
     - color: "#FF8DFF"
       r: 0.35
       base: [0.52, 0.88]
-      posSens: 0.9
+      posSens: 0.05
       sizeSens: 1.28
       colorSens: 0.55
-      speed: 0.0005
+      speed: 0.00025
 
 - name: Moisturizing Soft Cream
+  preset: soft
   blobs:
     - color: "#3C884A"
       r: 0.48
       base: [0.88, 0.44]
-      posSens: 1.05
+      posSens: 0.05
       sizeSens: 0.20
       colorSens: 0.1
-      speed: 0.0005
+      speed: 0.00025
     - color: "#4DC1D5"
-      r: 0.26
+      r: 0.36
       base: [0.50, 0.92]
-      posSens: 0.85
+      posSens: 0.5
       sizeSens: 1.30
       colorSens: 0.5
-      speed: 0.0005
+      speed: 0.00025
     - color: "#E9A650"
-      r: 0.33
-      base: [0.48, 0.10]
+      r: 0.43
+      base: [0.18, 0.20]
       posSens: 0.05
-      sizeSens: 0.24
+      sizeSens: 0.64
       colorSens: 0.1
-      speed: 0.0005
+      speed: 0.00025
 
 - name: Fresh Cream
+  preset: fresh
   blobs:
     - color: "#243971"
       r: 0.42
       base: [0.34, 0.36]
-      posSens: 1.0
+      posSens: 0.05
       sizeSens: 0.22
       colorSens: 0.2
-      speed: 0.0005
+      speed: 0.00025
     - color: "#236B21"
       r: 0.38
       base: [0.66, 0.38]
-      posSens: 1.1
+      posSens: 0.05
       sizeSens: 0.20
       colorSens: 0.1
-      speed: 0.0005
+      speed: 0.00025
     - color: "#29A899"
-      r: 0.36
+      r: 0.26
       base: [0.52, 0.70]
-      posSens: 0.9
-      sizeSens: 0.28
+      posSens: 0.5
+      sizeSens: 0.8
       colorSens: 0.15
-      speed: 0.0005
+      speed: 0.00005
