@@ -15,7 +15,7 @@
 			"C5": "sea3.mp3"
 		},
 		"release": 1,
-		"baseUrl": "/testsounds-part2/"
+		"baseUrl": "https://davay42.github.io/la_mer/testsounds-part2/"
 	},
 	"soft": {
 		"urls": {
@@ -24,7 +24,7 @@
 			"C5": "piano3.mp3"
 		},
 		"release": 1,
-		"baseUrl": "/testsounds-part2/"
+		"baseUrl": "https://davay42.github.io/la_mer/testsounds-part2/"
 	},
 	"fresh": {
 		"urls": {
@@ -33,6 +33,6 @@
 			"C5": "sea3.mp3"
 		},
 		"release": 1,
-		"baseUrl": "/testsounds-part2/"
+		"baseUrl": "https://davay42.github.io/la_mer/testsounds-part2/"
 	}
 }
