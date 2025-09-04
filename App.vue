@@ -23,8 +23,8 @@ const globeWithNotes = computed(() => {
     blobs: [
       ...currentGlobe.value.blobs,
       ...Object.entries(activeNotes).filter(e => e[1] > 0).map(e => ({
-        color: `hsla(${30 * ((e[0] - 9) % 12)}deg,50%,50%,${Math.random() * 0.25 + 0.25})`,
-        r: Math.random() * 0.1 + 0.2,
+        color: `hsla(${30 * ((e[0] - 9) % 12)}deg,50%,50%,${Math.random() * 0.1 + 0.05})`,
+        r: Math.random() * 0.3 + 0.3,
         base: [Math.random(), Math.random()],
         posSens: 0.8,
         sizeSens: .15,

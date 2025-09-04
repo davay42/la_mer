@@ -6,7 +6,7 @@
 			"C5": "piano3.mp3"
 		},
 		"release": 1,
-		"baseUrl": "/testsounds-part2/"
+		"baseUrl": "https://davay42.github.io/la_mer/samples/"
 	},
 	"night": {
 		"urls": {
@@ -15,24 +15,24 @@
 			"C5": "sea3.mp3"
 		},
 		"release": 1,
-		"baseUrl": "https://davay42.github.io/la_mer/testsounds-part2/"
+		"baseUrl": "https://davay42.github.io/la_mer/samples/"
 	},
 	"soft": {
 		"urls": {
-			"C3": "piano1.mp3",
-			"C4": "piano2.mp3",
-			"C5": "piano3.mp3"
+			"C3": "osmose1.mp3",
+			"C4": "osmose2.mp3",
+			"C5": "osmose3.mp3"
 		},
 		"release": 1,
-		"baseUrl": "https://davay42.github.io/la_mer/testsounds-part2/"
+		"baseUrl": "https://davay42.github.io/la_mer/samples/"
 	},
 	"fresh": {
 		"urls": {
-			"C3": "sea1.mp3",
-			"C4": "sea2.mp3",
-			"C5": "sea3.mp3"
+			"C3": "zebra1.mp3",
+			"C4": "zebra2.mp3",
+			"C5": "zebra3.mp3"
 		},
 		"release": 1,
-		"baseUrl": "https://davay42.github.io/la_mer/testsounds-part2/"
+		"baseUrl": "https://davay42.github.io/la_mer/samples/"
 	}
 }
