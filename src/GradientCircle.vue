@@ -48,12 +48,12 @@ let lastTime = 0
 function animate(time) {
   const dt = lastTime ? Math.min(1 / 15, (time - lastTime) / 1000) : 0 // cap dt to avoid large jumps
   lastTime = time
-  // slow circular motion for turbulence (shared angle, different radii)
-  const a = time * 0.002
-  turb.value.mx = Math.cos(a) * 25 * activity.value
-  turb.value.my = Math.sin(a) * 25 * activity.value
-  turb.value.gx = Math.cos(a + Math.PI / 2) * 12 * activity.value
-  turb.value.gy = Math.sin(a + Math.PI / 2) * 12 * activity.value
+  // smooth noise-driven motion for turbulence offsets (no circular drift)
+  const tz = time * 0.00035 + seed.value * 0.001
+  turb.value.mx = noise3D(0.13, 0.57, tz) * 25 * activity.value
+  turb.value.my = noise3D(0.73, 0.19, tz + 17.3) * 25 * activity.value
+  turb.value.gx = noise3D(0.41, 0.83, tz + 33.7) * 12 * activity.value
+  turb.value.gy = noise3D(0.91, 0.27, tz + 59.1) * 12 * activity.value
   props.blobs.forEach((b, i) => {
     const S = props.size ?? 200
 
@@ -142,7 +142,9 @@ watch(() => props.blobs, (blobs) => {
 }, { deep: true })
 
 watch(activity, a => {
-  if (a == 0) { seed.value = Math.floor(Math.random() * 10000) }
+  if (a == 0) {
+    seed.value = Math.floor(Math.random() * 10000)
+  }
 })
 
 watch(() => props.name, () => {
@@ -155,7 +157,7 @@ watch(() => props.name, () => {
 svg.scale-120(:viewBox="`0 0 ${size} ${size}`" :width="size" :height="size")
   defs
     filter#soft(color-interpolation-filters="sRGB")
-      feGaussianBlur(stdDeviation="62")
+      feGaussianBlur(stdDeviation="82")
 
     
     filter#maskDistort(color-interpolation-filters="sRGB" 
@@ -164,6 +166,7 @@ svg.scale-120(:viewBox="`0 0 ${size} ${size}`" :width="size" :height="size")
       feTurbulence(type="fractalNoise" :baseFrequency="0.005*activity"  numOctaves="1" :seed result="noise")
       feOffset(in="noise" :dx="turb.mx" :dy="turb.my" result="noiseShifted")
       feDisplacementMap(in="SourceGraphic" in2="noiseShifted" :scale="activity * 60" xChannelSelector="R" yChannelSelector="G")
+    
     mask#round
       rect(:width="size" :height="size" fill="black")
       // Apply the distortion filter to the white mask circle
@@ -174,15 +177,15 @@ svg.scale-120(:viewBox="`0 0 ${size} ${size}`" :width="size" :height="size")
       filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse"
       :x="-size * 0.25" :y="-size * 0.25" :width="size * 1.5" :height="size * 1.5"
       )
-      feGaussianBlur(in="SourceGraphic" stdDeviation="10" result="blur")
-      feTurbulence(type="fractalNoise" baseFrequency="0.015" numOctaves="4" :seed="grainSeed" stitchTiles="stitch" result="noise")
+      feGaussianBlur(in="SourceGraphic" stdDeviation="20" result="blur")
+      feTurbulence(type="fractalNoise" baseFrequency="0.002" numOctaves="4" :seed="grainSeed" stitchTiles="stitch" result="noise")
       feOffset(in="noise" :dx="turb.gx" :dy="turb.gy" result="noiseShifted")
-      feDisplacementMap(in="blur" in2="noiseShifted" scale="45" xChannelSelector="R" yChannelSelector="G" result="dist")
+      feDisplacementMap(in="blur" in2="noiseShifted" :scale="25 + 25*activity" xChannelSelector="R" yChannelSelector="G" result="dist")
       feComposite(in="dist" in2="dist" operator="over")
+  
   g(filter="url(#grain)"  mask="url(#round)")
-    g(filter="url(#soft)")
-      circle(v-for="(b,i) in blobs" :key="i"
-             :cx="positions[i].cx" :cy="positions[i].cy" :r="positions[i].r"
-             :fill="b.color" :fill-opacity="positions[i].op"
-             style="transition: fill 2000ms ease, fill-opacity 2000ms ease")
+    circle(v-for="(b,i) in blobs" :key="i" filter="url(#soft)"
+            :cx="positions[i].cx" :cy="positions[i].cy" :r="positions[i].r"
+            :fill="b.color" :fill-opacity="positions[i].op"
+            style="transition: fill 2000ms ease, fill-opacity 2000ms ease")
 </template>
