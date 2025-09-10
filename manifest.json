@@ -1,8 +1,8 @@
 {
-	"id": "SampleX-v.0.5.0",
-	"name": "SampleX",
-	"short_name": "SampleX",
-	"description": "Web polyphonic multilayered digital synthesizer",
+	"id": "LaMer-v.0.1.0",
+	"name": "La Mer",
+	"short_name": "La Mer",
+	"description": "Visual and aural interactive experience with Playtronica",
 	"start_url": "/",
 	"background_color": "#444",
 	"theme_color": "#444",
