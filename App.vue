@@ -86,7 +86,7 @@ const novis = ref(false)
     .flex.flex-wrap.gap-2.justify-center.z-200.flex-1
       .p-4.op-75.hover-op-85.active-op-100.cursor-pointer.text-center.tracking-wider.transition-700.variable-text.whitespace-nowrap.select-none(v-for="globe in globes" :key="globe.name" @click="currentGlobe = globe; selectPreset(globe.preset)" :class="{'active': currentGlobe.name == globe.name}" style="contain: layout;") {{globe.name}} 
 
-    .p-4.flex.flex-wrap.gap-8.justify-center.items-center.w-full.flex-auto.z-10(v-if="!novis") {{novis}}
+    .p-4.flex.flex-wrap.gap-8.justify-center.items-center.w-full.flex-auto.z-10(v-if="!novis")
       .flex.items-center.gap-6.flex-wrap.w-full.justify-center
         .flex.text-center.relative.justify-center.items-start.flex-col(style="perspective: 1000px; transform-style: preserve-3d;")
           GradientCircle(:size="400"
@@ -99,7 +99,7 @@ const novis = ref(false)
       .p-2.op-70.font-thin(v-for="(chord,c) in guessChords" :key="c") {{chord}}
 
   .flex.flex-col.gap-4.flex-1.max-w-55ch.leading-loose.text-center(v-else)
-    .text-2xl Love. Share. Play. {{novis}}
+    .text-2xl Love. Share. Play.
     p Turn on your speakers, then connect TouchMe or press (Z-M and Q-P parts) keys on your computer keyboard to start playing. This website is optimized for desktop only.
     a.underline(href="https://www.youtube.com/@PlayTronica" target="_blank") Watch this tutorial to find out more.
     p Now you can visualise notes and experiment with smooth and sassy sounds. Our TouchMe devices can turn a hug into music, or a kiss into a musical note.
