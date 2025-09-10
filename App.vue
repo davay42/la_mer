@@ -107,7 +107,7 @@ const novis = ref(false)
     .flex.flex-col.gap-4.items-center(v-if="Object.keys(inputs).length") 
       .text-lg Connected devices: 
       .flex.justify-center
-        .p-2.text-lg.bg-dark-100.rounded-lg(v-for="input in inputs" :key="input") {{input.name}}
+        .p-2.text-lg.border-light-500.border-op-80.border-2.rounded-lg(v-for="input in inputs" :key="input") {{input.name}}
     button.button.relative.overflow-hidden.flex.items-center.justify-center(@click="started = true")
       .absolute.top-9.text-2xl.z-100 START
       img.invert.grayscale.w-60.h-30(src="/swoosh.svg")
