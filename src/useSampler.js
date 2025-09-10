@@ -114,7 +114,7 @@ export function useSampler(options = {}) {
 
     function selectPreset(name) { if (presets[name]) currentPreset.value = name }
 
-    function triggerAttack(note, time = '+0.000000001', velocity = 1) { sampler.value?.triggerAttack(note, time, velocity) }
+    function triggerAttack(note, time = '+0.000000001', velocity = 1) { !loading.value ? sampler.value?.triggerAttack(note, time, velocity) : null }
     function triggerRelease(note, time = '+0.000000001') { sampler.value?.triggerRelease(note, time) }
 
     onUnmounted(() => {

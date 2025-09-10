@@ -76,21 +76,21 @@
 - name: Fresh Cream
   preset: fresh
   blobs:
-    - color: "#243971"
+    - color: "#2469e1"
       r: 0.42
       base: [0.34, 0.36]
       posSens: 0.05
       sizeSens: 0.22
       colorSens: 0.2
       speed: 0.00025
-    - color: "#236B21"
+    - color: "#238B41"
       r: 0.38
       base: [0.66, 0.38]
       posSens: 0.05
       sizeSens: 0.20
       colorSens: 0.1
       speed: 0.00025
-    - color: "#199889"
+    - color: "#19E8A9"
       r: 0.26
       base: [0.52, 0.70]
       posSens: 0.5

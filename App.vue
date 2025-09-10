@@ -58,10 +58,11 @@ const noise3D = createNoise3D()
 function animate(time) {
   const dt = lastTime ? Math.min(1 / 15, (time - lastTime) / 1000) : 0 // cap dt to avoid large jumps
   lastTime = time
-  const tz = time * 0.000015 + seed.value * 0.001
+  const tz = time * 0.000015
   turb.value.x = noise3D(0.13, 0.57, tz) * smoothActive.value
   turb.value.y = noise3D(10, 20, tz) * smoothActive.value
-  turb.value.r = noise3D(30, 40, tz) * smoothActive.value
+  turb.value.z = noise3D(30, 40, tz) * smoothActive.value
+  turb.value.r = ((noise3D(60, 40, tz) + 1) / 2) * smoothActive.value
   rafId = requestAnimationFrame(animate)
 }
 
@@ -75,17 +76,17 @@ onUnmounted(() => cancelAnimationFrame(rafId))
 
 <template lang='pug'>
 .flex.flex-col.items-center.w-full.h-100svh.justify-between.text-white
-  img.z-10.w-90.mt-12.mb-8(src="/logo_la_mer_white.svg")
+  img.z-10.w-90.mt-12.mb-8.z-200(src="/logo_la_mer_white.svg")
 
-  .flex.flex-wrap.gap-2.justify-center
+  .flex.flex-wrap.gap-2.justify-center.z-200
     .p-4.op-75.hover-op-85.active-op-100.cursor-pointer.text-center.tracking-wider.transition-700.variable-text.whitespace-nowrap.select-none(v-for="globe in globes" :key="globe.name" @click="currentGlobe = globe; selectPreset(globe.preset)" :class="{'active': currentGlobe.name == globe.name}" style="contain: layout;") {{globe.name}} 
 
-  .p-4.flex.flex-wrap.gap-8.justify-center.items-center.w-full.flex-auto
+  .p-4.flex.flex-wrap.gap-8.justify-center.items-center.w-full.flex-auto.z-10
     .flex.items-center.gap-6.flex-wrap.w-full.justify-center
       .flex.text-center.relative.justify-center.items-start.flex-col(style="perspective: 1000px; transform-style: preserve-3d;")
         GradientCircle(:size="400"
-          :style="{transform: `scale(${smoothActive*.25+1}) rotateZ(${turb.r*90}deg) rotateX(${turb.x*15}deg) rotateY(${turb.y*15}deg)`}"
-          :active="active"
+          :style="{transform: `scale(${1+turb.r}) rotateZ(${turb.z*120}deg) rotateX(${turb.x*15}deg) rotateY(${turb.y*15}deg)`}"
+          :active="!!active"
           v-bind="globeWithNotes")
 
 
