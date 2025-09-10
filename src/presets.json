@@ -6,7 +6,7 @@
 			"C6": "flute3.mp3"
 		},
 		"release": 1,
-		"baseUrl": "/samples/"
+		"baseUrl": "https://davay42.github.io/la_mer/samples/"
 	},
 	"night": {
 		"urls": {
@@ -15,7 +15,7 @@
 			"C7": "sea3.mp3"
 		},
 		"release": 1,
-		"baseUrl": "/samples/"
+		"baseUrl": "https://davay42.github.io/la_mer/samples/"
 	},
 	"soft": {
 		"urls": {
@@ -24,7 +24,7 @@
 			"C5": "osmose3.mp3"
 		},
 		"release": 1,
-		"baseUrl": "/samples/"
+		"baseUrl": "https://davay42.github.io/la_mer/samples/"
 	},
 	"fresh": {
 		"urls": {
@@ -33,6 +33,6 @@
 			"C5": "zebra3.mp3"
 		},
 		"release": 1,
-		"baseUrl": "/samples/"
+		"baseUrl": "https://davay42.github.io/la_mer/samples/"
 	}
 }
