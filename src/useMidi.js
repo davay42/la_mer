@@ -13,7 +13,7 @@ export const outputs = shallowReactive({})
 export const activeNotes = reactive({})
 export const midiLog = shallowReactive([])
 
-export const keyOffset = useClamp(useStorage('key-offset', 2), 0, 4)
+export const keyOffset = useClamp(0, -2, 2)
 
 export const midi = reactive({
   initiated: false,

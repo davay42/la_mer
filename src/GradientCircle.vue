@@ -100,13 +100,10 @@ function animate(time) {
   rafId = requestAnimationFrame(animate)
 }
 
-
-
 onMounted(() => {
-  const n1 = noise3D(1, 4, Date.now())
-  console.log(n1)
   rafId = requestAnimationFrame(animate)
 })
+
 onUnmounted(() => cancelAnimationFrame(rafId))
 
 const grainSeed = ref(Math.floor(Math.random() * 10000))
@@ -178,9 +175,9 @@ svg.scale-120(:viewBox="`0 0 ${size} ${size}`" :width="size" :height="size")
       :x="-size * 0.25" :y="-size * 0.25" :width="size * 1.5" :height="size * 1.5"
       )
       feGaussianBlur(in="SourceGraphic" stdDeviation="20" result="blur")
-      feTurbulence(type="fractalNoise" baseFrequency="0.002" numOctaves="4" :seed="grainSeed" stitchTiles="stitch" result="noise")
+      feTurbulence(type="fractalNoise" baseFrequency="0.01" numOctaves="4" :seed="grainSeed" stitchTiles="stitch" result="noise")
       feOffset(in="noise" :dx="turb.gx" :dy="turb.gy" result="noiseShifted")
-      feDisplacementMap(in="blur" in2="noiseShifted" :scale="25 + 25*activity" xChannelSelector="R" yChannelSelector="G" result="dist")
+      feDisplacementMap(in="blur" in2="noiseShifted" :scale="25 + 35*activity" xChannelSelector="R" yChannelSelector="G" result="dist")
       feComposite(in="dist" in2="dist" operator="over")
   
   g(filter="url(#grain)"  mask="url(#round)")

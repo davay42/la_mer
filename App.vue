@@ -4,6 +4,7 @@ import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useMIDI } from './src/useMidi'
 import GradientCircle from './src/GradientCircle.vue'
 import { useSampler } from './src/useSampler'
+import { createNoise3D } from 'simplex-noise'
 
 import globes from './src/globes.yaml'
 const currentGlobe = ref(globes[0])
@@ -16,6 +17,8 @@ watch(midiNote, n => {
   if (n.velocity > 0) triggerAttack(Midi(n.number).toNote(), "+0.000000001", n.velocity)
   else triggerRelease(Midi(n.number).toNote(), "+0.000000001")
 })
+
+
 
 const globeWithNotes = computed(() => {
   return {
@@ -36,6 +39,38 @@ const globeWithNotes = computed(() => {
   }
 })
 
+import { TransitionPresets, useTransition } from '@vueuse/core'
+
+
+const seed = ref(Math.floor(Math.random() * 10000))
+const turb = ref({ x: 0, y: 0, r: 0 })
+const active = computed(() => Object.entries(activeNotes).filter(e => e[1] > 0).length ? 1 : 0)
+const smoothActive = useTransition(active, {
+  duration: 2000,
+  transition: TransitionPresets.easeInOutSine,
+})
+
+let rafId = 0
+let lastTime = 0
+
+const noise3D = createNoise3D()
+
+function animate(time) {
+  const dt = lastTime ? Math.min(1 / 15, (time - lastTime) / 1000) : 0 // cap dt to avoid large jumps
+  lastTime = time
+  const tz = time * 0.000015 + seed.value * 0.001
+  turb.value.x = noise3D(0.13, 0.57, tz) * smoothActive.value
+  turb.value.y = noise3D(10, 20, tz) * smoothActive.value
+  turb.value.r = noise3D(30, 40, tz) * smoothActive.value
+  rafId = requestAnimationFrame(animate)
+}
+
+onMounted(() => {
+  rafId = requestAnimationFrame(animate)
+})
+
+onUnmounted(() => cancelAnimationFrame(rafId))
+
 </script>
 
 <template lang='pug'>
@@ -47,14 +82,14 @@ const globeWithNotes = computed(() => {
 
   .p-4.flex.flex-wrap.gap-8.justify-center.items-center.w-full.flex-auto
     .flex.items-center.gap-6.flex-wrap.w-full.justify-center
-      .rounded-full.shadow-sm.p-0.flex.text-center.relative.justify-center.items-start.flex-col
-        .text-sm.z-10
+      .flex.text-center.relative.justify-center.items-start.flex-col(style="perspective: 1000px; transform-style: preserve-3d;")
         GradientCircle(:size="400"
-          :active="Object.entries(activeNotes).filter(e=>e[1]>0).length > 0"
+          :style="{transform: `scale(${smoothActive*.25+1}) rotateZ(${turb.r*90}deg) rotateX(${turb.x*15}deg) rotateY(${turb.y*15}deg)`}"
+          :active="active"
           v-bind="globeWithNotes")
 
 
-  .p-2.flex.flex-wrap.gap-2.absolute.bottom-2
+  .p-2.flex.flex-wrap.gap-2.absolute.bottom-2.z-100
     .p-2.op-70.font-thin(v-for="(chord,c) in guessChords" :key="c") {{chord}}
 </template>
 

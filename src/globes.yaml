@@ -90,7 +90,7 @@
       sizeSens: 0.20
       colorSens: 0.1
       speed: 0.00025
-    - color: "#29A899"
+    - color: "#199889"
       r: 0.26
       base: [0.52, 0.70]
       posSens: 0.5
