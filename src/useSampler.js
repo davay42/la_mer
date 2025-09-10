@@ -51,6 +51,7 @@ export function useSampler(options = {}) {
             // Treat as SampleMap (note->url/AudioBuffer) and use 2-arg form
             sampler.value = new Sampler(spec, onload).connect(delay.value)
         }
+        sampler.value.volume.rampTo(0.85)
         return sampler.value
     }
 
