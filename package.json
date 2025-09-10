@@ -18,17 +18,10 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
-		"@tonaljs/tonal": "^4.10.0",
 		"@unocss/reset": "^66.5.0",
 		"@vueuse/core": "^13.9.0",
 		"@vueuse/math": "^13.9.0",
-		"color-hash": "^2.0.2",
-		"colord": "^2.9.3",
-		"floating-vue": "^5.2.2",
-		"hidpi-canvas": "^1.0.10",
-		"midi-writer-js": "^3.1.1",
 		"simplex-noise": "^4.0.3",
-		"soundfont-player": "^0.12.0",
 		"tonal": "^6.4.2",
 		"tone": "^15.1.22",
 		"vue": "3.6.0-alpha.2",
