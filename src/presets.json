@@ -1,18 +1,18 @@
 {
 	"dela": {
 		"urls": {
-			"C4": "flute.mp3",
-			"C5": "flute2.mp3",
-			"C6": "flute3.mp3"
+			"C3": "flute.mp3",
+			"C4": "flute2.mp3",
+			"C5": "flute3.mp3"
 		},
 		"release": 1,
 		"baseUrl": "https://davay42.github.io/la_mer/samples/"
 	},
 	"night": {
 		"urls": {
-			"C5": "sea1.mp3",
-			"C6": "sea2.mp3",
-			"C7": "sea3.mp3"
+			"C4": "sea1.mp3",
+			"C5": "sea2.mp3",
+			"C6": "sea3.mp3"
 		},
 		"release": 1,
 		"baseUrl": "https://davay42.github.io/la_mer/samples/"

@@ -94,6 +94,7 @@ const novis = ref(false)
             :active="!!active"
             v-bind="globeWithNotes")
 
+    .p-2.flex.flex-wrap.gap-2.absolute.bottom-12.z-100.op-90(v-if="loading") Loading...
 
     .p-2.flex.flex-wrap.gap-2.absolute.bottom-2.z-100
       .p-2.op-70.font-thin(v-for="(chord,c) in guessChords" :key="c") {{chord}}
