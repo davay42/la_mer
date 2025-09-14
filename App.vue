@@ -18,8 +18,6 @@ watch(midiNote, n => {
   else triggerRelease(Midi(n.number).toNote(), "+0.000000001")
 })
 
-
-
 const globeWithNotes = computed(() => {
   return {
     ...currentGlobe.value,
@@ -90,7 +88,7 @@ const novis = ref(false)
       .flex.items-center.gap-6.flex-wrap.w-full.justify-center
         .flex.text-center.relative.justify-center.items-start.flex-col(style="perspective: 1000px; transform-style: preserve-3d;")
           GradientCircle(:size="400"
-            :style="{transform: `scale(${1+turb.r}) rotateZ(${turb.z*120}deg) rotateX(${turb.x*25}deg) rotateY(${turb.y*25}deg)`}"
+            :style="{transform: `scale(${1+smoothActive*1+turb.r*1}) rotateZ(${turb.z*120}deg) rotateX(${turb.x*25}deg) rotateY(${turb.y*25}deg)`}"
             :active="!!active"
             v-bind="globeWithNotes")
 
@@ -106,9 +104,10 @@ const novis = ref(false)
     p Now you can visualise notes and experiment with smooth and sassy sounds. Our TouchMe devices can turn a hug into music, or a kiss into a musical note.
     p The musical content presented on this site is for non-commercial use only. If your computer is slow, try <a class="underline" href="#novis" @click="novis = true;started = true">playing without visuals</a>.
     .flex.flex-col.gap-4.items-center(v-if="Object.keys(inputs).length") 
-      .text-lg Connected devices: 
-      .flex.justify-center
-        .p-2.text-lg.border-light-500.border-op-80.border-2.rounded-lg(v-for="input in inputs" :key="input") {{input.name}}
+      .text-lg.inline-flex.gap-1
+        span(v-for="input in inputs" :key="input") {{input.name}}
+        span connected!
+    .text-lg(v-else) Connect your TouchMe
     button.button.relative.overflow-hidden.flex.items-center.justify-center(@click="started = true")
       .absolute.top-9.text-2xl.z-100 START
       img.invert.grayscale.w-60.h-30(src="/swoosh.svg")
@@ -117,7 +116,7 @@ const novis = ref(false)
     
 </template>
 
-<style>
+<style lang="postcss">
 @font-face {
   font-family: 'Poppins Variable';
   src: url('/Poppins-VariableFont_wght.otf') format('opentype');
@@ -126,12 +125,11 @@ const novis = ref(false)
 }
 
 html,
-body {
-  background-color: #006140;
-}
-
-body {
+body,
+#app {
   font-family: 'Poppins Variable', sans-serif;
+  @apply max-h-100svh overlow-hidden;
+  background-color: #006140;
 }
 
 .variable-text {
