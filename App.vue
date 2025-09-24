@@ -2,16 +2,19 @@
 import { Midi } from 'tone'
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useMIDI } from './src/useMidi'
+
+import { createNoise3D } from 'simplex-noise'
+import { TransitionPresets, useTransition } from '@vueuse/core'
+
 import GradientCircle from './src/GradientCircle.vue'
 import { useSampler } from './src/useSampler'
-import { createNoise3D } from 'simplex-noise'
 
 import globes from './src/globes.yaml'
 const currentGlobe = ref(globes[0])
 
 const { sampler, presets, currentPreset, loading, progress, audioBuffer, params, selectPreset, loadFile, loadUrl, triggerAttack, triggerRelease } = useSampler()
 
-const { activeNotes, midiNote, guessChords, inputs } = useMIDI()
+const { activeNotes, midiNote, guessChords, inputs, keyOffset } = useMIDI()
 
 watch(midiNote, n => {
   if (n.velocity > 0) triggerAttack(Midi(n.number).toNote(), "+0.000000001", n.velocity)
@@ -37,10 +40,9 @@ const globeWithNotes = computed(() => {
   }
 })
 
-import { TransitionPresets, useTransition } from '@vueuse/core'
 
 
-const seed = ref(Math.floor(Math.random() * 10000))
+
 const turb = ref({ x: 0, y: 0, r: 0 })
 const active = computed(() => Object.entries(activeNotes).filter(e => e[1] > 0).length ? 1 : 0)
 const smoothActive = useTransition(active, {
@@ -74,13 +76,40 @@ onUnmounted(() => cancelAnimationFrame(rafId))
 const started = ref(false)
 const novis = ref(false)
 
+const settingsOpen = ref(false)
+const settingsDialog = ref()
+
+watch(settingsOpen, open => {
+  if (open) settingsDialog.value.showModal()
+  else settingsDialog.value.close()
+})
+
 </script>
 
 <template lang='pug'>
 .flex.flex-col.items-center.w-full.h-100svh.justify-between.text-white
   img.z-10.w-90.mt-12.mb-8.z-200(src="/logo_la_mer_white.svg")
 
+  button.p-4.top-2.right-2.absolute.op-10.hover-op-100.transition.text-xl(@click="settingsOpen = !settingsOpen") ⚙️
+
+  dialog.z-300.rounded-2xl.bg-transparent.min-w-60(ref="settingsDialog" @close="settingsOpen = false" @click.self="settingsOpen = false")
+    .p-3.flex.flex-col.gap-2.bg-amber-100.bg-op-20.backdrop-blur-xl.shadow.relative(@click.stop)
+      .text-2xl Settings
+      p Key Offset {{keyOffset}}
+      input(type="range" :modelValue="keyOffset" @input="keyOffset = Number($event.target.value)" min="-2" max="2" step="1")
+      label Reverb Wet {{params.reverbWet}}
+      input(type="range" :modelValue="params.reverbWet" @input="params.reverbWet = Number($event.target.value)" min="0" max="1" step="0.01")
+      label Reverb Decay {{params.reverbDecay}}
+      input(type="range" :modelValue="params.reverbDecay" @input="params.reverbDecay = Number($event.target.value)" min="0" max="10" step="0.01")
+      label Delay Wet {{params.delayWet}}
+      input(type="range" :modelValue="params?.delayWet" @input="params.delayWet = Number($event.target.value)" min="0" max="1" step="0.01")
+      label Delay Feedback {{params.delayFeedback}}
+      input(type="range" :modelValue="params.delayFeedback" @input="params.delayFeedback = Number($event.target.value)" min="0" max="1" step="0.01")
+
+      button.px-2.border-2.rounded-xl.border-dark(@click="settingsOpen = false") ✕ Close
+
   template(v-if="started")
+
     .flex.flex-wrap.gap-2.justify-center.z-200.flex-1
       .p-4.op-75.hover-op-85.active-op-100.cursor-pointer.text-center.tracking-wider.transition-700.variable-text.whitespace-nowrap.select-none(v-for="globe in globes" :key="globe.name" @click="currentGlobe = globe; selectPreset(globe.preset)" :class="{'active': currentGlobe.name == globe.name}" style="contain: layout;") {{globe.name}} 
 
@@ -88,7 +117,7 @@ const novis = ref(false)
       .flex.items-center.gap-6.flex-wrap.w-full.justify-center
         .flex.text-center.relative.justify-center.items-start.flex-col(style="perspective: 1000px; transform-style: preserve-3d;")
           GradientCircle(:size="400"
-            :style="{transform: `scale(${1+smoothActive*1+turb.r*1}) rotateZ(${turb.z*120}deg) rotateX(${turb.x*25}deg) rotateY(${turb.y*25}deg)`}"
+            :style="{transform: `scale(${1+smoothActive*1+turb.r*1}) rotateZ(${turb.z*120}deg) rotateX(${turb.x*25}deg) rotateY(${turb.y*25}deg)`}" 
             :active="!!active"
             v-bind="globeWithNotes")
 
